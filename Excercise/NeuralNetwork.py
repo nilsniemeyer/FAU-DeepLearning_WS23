@@ -6,6 +6,7 @@ class NeuralNetwork():
         self.weights_initializer = weights_initializer
         self.bias_initializer = bias_initializer
         self.optimizer = optimizer
+        self._phase = None
         self.loss = []
         self.layers = []
         self.data_layer = None
@@ -16,10 +17,17 @@ class NeuralNetwork():
     def forward(self):
         self.input_tensor, self.label_tensor = self.data_layer.next()
         # Passing the input data through each layer in the network, updating the input tensor.
+        regularization_loss = 0
         for layer in self.layers:
+            layer.testing_phase = False
             self.input_tensor = layer.forward(self.input_tensor)
-        # Returning the loss using the loss layer and the predicted output and labels
-        return self.loss_layer.forward(self.input_tensor, self.label_tensor)
+
+        loss = self.loss_layer.forward(self.input_tensor, self.label_tensor)
+        if self.optimizer.regularizer:
+            regularization_loss = self.optimizer.regularizer.norm(loss)
+
+        regularized_loss = loss + regularization_loss
+        return regularized_loss
 
     def backward(self):
         error = self.loss_layer.backward(self.label_tensor)
@@ -37,7 +45,6 @@ class NeuralNetwork():
     def train(self, iterations):
         # Performing forward and backward propagation for each iteration and appending the loss.
         for i in range(iterations):
-            print("iteration ", i)
             loss = self.forward()
             self.loss.append(loss)
             self.backward()
@@ -45,5 +52,14 @@ class NeuralNetwork():
     def test(self, input_tensor):
         # Propagating the input tensor through each layer in the network and return the predicted output.
         for layer in self.layers:
+            layer.testing_phase = True
             input_tensor = layer.forward(input_tensor)
         return input_tensor
+
+    @property
+    def phase(self):
+        return self._phase
+
+    @phase.setter
+    def phase(self, value):
+        self._phase = value

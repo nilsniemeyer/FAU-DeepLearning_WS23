@@ -1,6 +1,10 @@
 from . import Base
 import numpy as np
 from . import Initializers
+import sys
+from icecream import ic
+np.set_printoptions(threshold=sys.maxsize)
+np.set_printoptions(linewidth=500)
 
 
 class FullyConnected(Base.BaseLayer):
@@ -23,39 +27,46 @@ class FullyConnected(Base.BaseLayer):
         self.initialize(weights_initializer, bias_initializer)
 
     def forward(self, input_tensor):
+        #ic("FC: Forward")
         # Adding bias column
         self.input_tensor = np.hstack((input_tensor, np.ones((input_tensor.shape[0], 1))))
+        #ic("FC: ", self.input_tensor.shape)
+        #ic("FC: ", self.input_tensor.shape)
+        #ic("FC: ", self.input_tensor)
         # Computing the output tensor by multiplying the input tensor with the weights
         return np.dot(self.input_tensor, self.weights)
 
     def backward(self, error_tensor):
+        #ic("FC: Backward")
         # Performing backward propagation through the layer
         # Computing the error tensor for the previous layer
         prev_error_tensor = np.dot(error_tensor, self.weights[:-1].T)
         # Computing the gradient wrt weights
-        self._gradient_weights = np.dot(self.input_tensor.T, error_tensor)
+        self.gradient_weights = np.dot(self.input_tensor.T, error_tensor)
+        #ic("FC: ", self.gradient_weights.shape)
         # Updating the weights using the optimizer if available
         if self.optimizer is not None:
-            self.weights = self.optimizer.calculate_update(self.weights, self._gradient_weights)
+            #ic("FC: Optimizing Hidden weights")
+            self.weights = self.optimizer.calculate_update(self.weights, self.gradient_weights)
         return prev_error_tensor
 
     def initialize(self, weights_initializer, bias_initializer):
-        # Initializing the weights and bias using the initializers
         self.weights = weights_initializer.initialize(self.weights.shape, self.input_size, self.output_size)
         self.weights[-1] = bias_initializer.initialize(self.weights[-1].shape, self.input_size, self.output_size)
 
     @property
     def optimizer(self):
-        # Get the optimizer associated with the layer
         return self._optimizer
 
     @optimizer.setter
     def optimizer(self, value):
-        # Set the optimizer for the layer
         self._optimizer = value
 
     @property
     def gradient_weights(self):
-        # Get the gradient weights computed during backward propagation
         return self._gradient_weights
+
+    @gradient_weights.setter
+    def gradient_weights(self, gradient_weights):
+        self._gradient_weights = gradient_weights
 

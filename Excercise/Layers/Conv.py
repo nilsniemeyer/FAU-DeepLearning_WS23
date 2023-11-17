@@ -229,6 +229,7 @@ class Conv(Base.BaseLayer):
     @property
     def bias_optimizer(self):
         return self._bias_optimizer
+
     @bias_optimizer.setter
     def bias_optimizer(self, value):
         self._bias_optimizer = value

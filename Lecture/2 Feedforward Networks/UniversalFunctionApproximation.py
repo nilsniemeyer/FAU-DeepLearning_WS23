@@ -18,7 +18,7 @@ class Model(nn.Module):
         return x
 
 
-x_axis = np.linspace(-20, 20, 1000)
+x_axis = np.linspace(-20, 20, 10000)
 y_axis = np.sin(x_axis) * np.exp(-x_axis / 10) + (x_axis / 20)**2
 
 inputs_train, inputs_test, labels_train, labels_test = train_test_split(x_axis, y_axis, test_size=0.5, random_state=42)
