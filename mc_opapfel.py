@@ -16,6 +16,7 @@ def run_lottery_simulation(total_runs):
     return results
 
 def print_results_as_percentages(results, total_runs):
+    sorted_results = sorted(results.items())
     for opapfel, count in results.items():
         percentage = (count / total_runs) * 100
         print(f"Anzahl der OP Äpfel: {opapfel}, Häufigkeit: {percentage:.4f}%")
